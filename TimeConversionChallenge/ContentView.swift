@@ -10,93 +10,107 @@ import SwiftUI
 
 struct ContentView: View {
     // We have 3 inputs 1 for measure, 2 for desired input, output
-    // We have 2 values to change the desired input to universal time unit then that to desired output type
     @State private var inputMeasure: Double = 0.0
     @State private var inputType: String = ""
     @State private var outcomeType: String = ""
-    @State var universalTimeInput: Double = 0
-    @State var universalTimeOutput: Double = 0
- 
-    // I am using this to catch the desired input, output type
-    var timeFrame = ["second", "minute", "hour", "year"]
+    @FocusState private var amountIsFocused: Bool
     
-    //This turns the input measure to the universal time by checking the types
-    var timeconversionInput: Double{
+    
+    // I am using this to catch the desired input, output type
+    let timeFrame = ["second", "minute", "hour","day", "year"]
+    
+    //This turns the input measure to the universal time by checking the types, then turns the universal time to the desired kind
+    var timeconversion: Double{
+        
+        var universalTime = 0.0
+        
         if inputType == "second" {
-            universalTimeInput = inputMeasure / 60
+            universalTime = inputMeasure / 60
         }
         else if inputType == "minute" {
-            universalTimeInput = inputMeasure
+            universalTime = inputMeasure
         }
         else if inputType == "hour" {
-            universalTimeInput = inputMeasure * 60
+            universalTime = inputMeasure * 60
+        }
+        else if inputType == "day" {
+            universalTime = inputMeasure * 1440
         }
         else if inputType == "year" {
-            universalTimeInput = inputMeasure * 525600
+            universalTime = inputMeasure * 525600
         }
-        return universalTimeInput
-    }
-    
-    //this turns the universal time to the final outcome by checking the outcome types
-    
-    var timeconversionOutput: Double{
+        
         if outcomeType == "second" {
-            universalTimeOutput = universalTimeInput * 60
+            return universalTime * 60
         }
         else if outcomeType == "minute" {
-            universalTimeOutput = universalTimeInput
+            return universalTime
         }
         else if outcomeType == "hour" {
-            universalTimeOutput = universalTimeInput / 60
+            return universalTime / 60
+        }
+        else if outcomeType == "day" {
+            return universalTime / 1440
         }
         else if outcomeType == "year" {
-            universalTimeOutput = universalTimeInput / 525600
+            return universalTime / 525600
         }
-        return universalTimeOutput
+        else {
+            return universalTime
+        }
     }
     
-    
-    
-
     var body: some View {
-       //gets the measure
-        Form {
-            Section {
-                TextField ("Amount Of Time", value: $inputMeasure, format: .number)
+        NavigationView {
+            Form {
+                //gets the measure
+                Section {
+                    TextField ("Amount Of Time", value: $inputMeasure, format: .number)
+                        .keyboardType(.decimalPad)
+                        .focused($amountIsFocused)
+                }
+            header: {
+                Text("Amount Of Time")
             }
-        header: {
-        Text("Amount Of Time")
-        }
-            //gets the starting type
-            Section {
-                Picker ("From", selection: $inputType) {
-                    ForEach(timeFrame, id: \.self) {
-                        Text("\($0)")
+                //gets the starting type
+                Section {
+                    Picker ("From", selection: $inputType) {
+                        ForEach(timeFrame, id: \.self) {
+                            Text("\($0)")
+                        }
+                    }
+                }
+            header: {
+                Text("What do you want to convert")
+            }
+                //gets the output type
+                Section {
+                    Picker ("To", selection: $outcomeType) {
+                        ForEach(timeFrame, id: \.self) {
+                            Text("\($0)")
+                        }
+                    }
+                }
+            header: {
+                Text("What type do you want it")
+            }
+                //shows the result
+                Section {
+                    Text (timeconversion, format: .number)
+                }
+            header: {
+                Text("Result")
+            }
+            }
+            .navigationTitle("Time Converter")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        amountIsFocused = false
                     }
                 }
             }
-        header: {
-        Text("What do you want to convert")
-        }
-            //gets the output type
-            Section {
-                Picker ("To", selection: $outcomeType) {
-                    ForEach(timeFrame, id: \.self) {
-                        Text("\($0)")
-                    }
-                }
-            }
-        header: {
-        Text("Desired Outcome Type")
-        }
-            //shows the result
-            Section {
-                Text (universalTimeOutput, format: .number)
-            }
-        header: {
-        Text("Result")
-        }
-            
         }
     }
 }
